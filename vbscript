@@ -1,0 +1,47 @@
+Sub exportComments()
+' Exports comments from a MS Word document to Excel and associates them with the heading paragraphs
+' they are included in. Useful for outline numbered section, i.e. 3.2.1.5….
+' Thanks to Graham mayor https://answers.microsoft.com/en-us/msoffice/forum/msoffice_word-msoffice_custom/export-word-review-comments-in-excel/54818c46-b7d2-416c-a4e3-3131ab68809c
+' Need to set a VBA reference to "Microsoft Excel 14.0 Object Library"
+'Dim xlApp As Excel.Application
+Dim xlApp As Object
+Dim xlWB As Object
+Dim i As Integer, HeadingRow As Integer
+Dim objPara As Paragraph
+Dim objComment As Comment
+Dim strSection As String
+Dim strTemp
+Dim myRange As Range
+Set xlApp = CreateObject("Excel.Application")
+Debug.Print xlApp.Version
+xlApp.Visible = True
+Set xlWB = xlApp.Workbooks.Add 'create a new workbook
+With xlWB.Worksheets(1)
+    For i = 1 To ActiveDocument.Comments.Count
+        .Cells(i, 1).Formula = ActiveDocument.Comments(i).Initial
+        .Cells(i, 2).Formula = ActiveDocument.Comments(i).Range
+        .Cells(i, 3).Formula = Format(ActiveDocument.Comments(i).Date, "dd/MM/yyyy")
+    Next i
+End With
+Set xlWB = Nothing
+Set xlApp = Nothing
+End Sub
+
+Function ParentLevel(Para As Word.Paragraph) As String
+'From Tony Jollans
+'Finds the first outlined numbered paragraph above the given paragraph object
+    Dim ParaAbove As Word.Paragraph
+    Set ParaAbove = Para
+    sStyle = Para.Range.ParagraphStyle
+    sStyle = Left(sStyle, 4)
+    If sStyle = "Head" Then
+        GoTo Skip
+    End If
+    Do While ParaAbove.OutlineLevel = Para.OutlineLevel
+        Set ParaAbove = ParaAbove.Previous
+    Loop
+Skip:
+    strTitle = ParaAbove.Range.Text
+    strTitle = Left(strTitle, Len(strTitle) - 1)
+    ParentLevel = ParaAbove.Range.ListFormat.ListString & " " & strTitle
+End Function
