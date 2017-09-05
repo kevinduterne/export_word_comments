@@ -17,10 +17,25 @@ Debug.Print xlApp.Version
 xlApp.Visible = True
 Set xlWB = xlApp.Workbooks.Add 'create a new workbook
 With xlWB.Worksheets(1)
+' Create Heading
+    HeadingRow = 1
+    .Cells(HeadingRow, 1).Formula = "Index"
+    .Cells(HeadingRow, 2).Formula = "Initials"
+    .Cells(HeadingRow, 3).Formula = "Comment"
+    .Cells(HeadingRow, 4).Formula = "Date"
+    .Cells(HeadingRow, 5).Formula = "Page"
+    strSection = "preamble" 'all sections before "1." will be labeled as "preamble"
+    strTemp = "preamble"
+    If ActiveDocument.Comments.Count = 0 Then
+        MsgBox ("No comments")
+        Exit Sub
+    End If
     For i = 1 To ActiveDocument.Comments.Count
-        .Cells(i, 1).Formula = ActiveDocument.Comments(i).Initial
-        .Cells(i, 2).Formula = ActiveDocument.Comments(i).Range
-        .Cells(i, 3).Formula = Format(ActiveDocument.Comments(i).Date, "dd/MM/yyyy")
+        .Cells(i, 1).Formula = ActiveDocument.Comments(i).Index
+        .Cells(i, 2).Formula = ActiveDocument.Comments(i).Initial
+        .Cells(i, 3).Formula = ActiveDocument.Comments(i).Range
+        .Cells(i, 4).Formula = Format(ActiveDocument.Comments(i).Date, "dd/MM/yyyy")
+        .Cells(i, 5).Formula = ActiveDocument.Comments(i).Reference.Information(wdActiveEndAdjustedPageNumber)
     Next i
 End With
 Set xlWB = Nothing
